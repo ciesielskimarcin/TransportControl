@@ -5,6 +5,7 @@ import Header from '../src/components/Header'
 import ActionBar from './components/ActionBar'
 import TransportCategoriesList from './components/TransportCategoriesList'
 import CheckTransport from './components/CheckTransport'
+import BodyComponent from './components/BodyComponent'
 import './App.css'
 
 
@@ -27,9 +28,7 @@ function App() {
     <>
       <Header />
       <div>
-        <ActionBar />
-        <TransportCategoriesList/>
-        {/* <CheckTransport/> */}
+        {tcAPI && (<BodyComponent api={tcAPI}/>)}
       </div>
     </>
   )

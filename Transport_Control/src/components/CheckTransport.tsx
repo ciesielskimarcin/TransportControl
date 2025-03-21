@@ -1,6 +1,8 @@
 import { ModusButton, ModusMessage, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
-import { useState } from "react";
-import { ObjectProperties, WorkspaceAPI } from "trimble-connect-workspace-api";
+import { useEffect, useRef, useState } from "react";
+import { ObjectProperties, ObjectSelector, WorkspaceAPI } from "trimble-connect-workspace-api";
+import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
+import _ from "lodash";
 
 type ObjectWithValue = {
     properties: ObjectProperties,
@@ -9,10 +11,30 @@ type ObjectWithValue = {
     order: number
 }
 
-export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
+type CheckTransportProps = {
+    transports: TransportTypeEntity[]
+    api: WorkspaceAPI
+}
+
+export default function CheckTransport(props: CheckTransportProps) {
 
     const [listOfArrays, setListOfArrays] = useState<number[][]>([]);
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
+    const [filteredObjects, setFilteredObjects] = useState<ObjectWithValue[]>([]);
+    const modelId = useRef<string>('');
+
+    useEffect(() => {
+        async function getObjectsProperties() {
+
+            const modelObjects = await props.api.viewer.getObjects();
+            modelId.current = modelObjects[0].modelId;
+
+            console.log("this is model objects: ", modelObjects);
+            console.log("this is modeliD.current: ", modelId.current)
+        }
+        getObjectsProperties();
+
+    }, [matchedObjects]);
 
     
     async function getPropertyValue(modelId: string, objectId: number, propertyName: string): Promise<string> {
@@ -21,12 +43,12 @@ export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
         const set = splitted[0];
         const propertyType = splitted[1];
 
-        const properties = await api.viewer.getObjectProperties(modelId, [objectId]);
+        const properties = await props.api.viewer.getObjectProperties(modelId, [objectId]);
 
-        const props = properties[0].properties;
-        if (props === undefined) return '';
+        const propss = properties[0].properties;
+        if (propss === undefined) return '';
 
-        const propertySet = props.find(p => (p as any).name === set);
+        const propertySet = propss.find(p => (p as any).name === set);
         if (propertySet === undefined || propertySet.properties === undefined) return '';
 
         const property = propertySet.properties.find(p => p.name === propertyType);
@@ -43,13 +65,38 @@ export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
         return numberValue;
     }
 
+    /**
+     * Hightlight elements from selected group in TC Viewer 
+     * @param groupName - Transport category group to highlight in TC
+     */
+    function showSelectedGroup(groupName: string) {
+
+        console.log("IM HERE")
+        const filtered = matchedObjects.filter(obj => obj.value === groupName);
+        setFilteredObjects(filtered);
+
+        const newModelId = modelId.current;
+
+        const objectSelector: ObjectSelector = {
+            modelObjectIds: [{ modelId: newModelId, objectRuntimeIds: filtered.map(r => r.properties.id) }]
+        };
+
+
+        props.api.viewer.setSelection(objectSelector, "set");
+        console.log("matchedObjects: ", matchedObjects);
+        console.log("filteredObjects: ", filteredObjects);
+        console.log("modelId.current: ", modelId.current)
+        console.log("newModelId: ", newModelId)
+        console.log("filtered: ", objectSelector);
+    }
+
     async function triggerTest() {
         setListOfArrays([]);
         setMatchedObjects([]);
         const result: ObjectWithValue[] = [];
 
         // variable with all selected objects in TC. Selection is an array of ModelObjectsIds
-        const selection = await api.viewer.getSelection();
+        const selection = await props.api.viewer.getSelection();
         if (selection.length == 0) return;
 
         // selecting first Model from TC 
@@ -58,13 +105,13 @@ export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
 
         //console.log("first selection.objectsRuntimeIds", firstSelection);
 
-        const bBoxes = await api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
+        const bBoxes = await props.api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
         for (let i = 0; i < bBoxes.length; i++) {
             const bBox = bBoxes[i];
 
             const newArray: number[] = [];
 
-            const productName = await api.viewer.getObjectProperties(firstSelection.modelId, [bBox.id]);
+            const productName = await props.api.viewer.getObjectProperties(firstSelection.modelId, [bBox.id]);
             const productNameResult = productName[0].product?.name;
 
             const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, "Dimensions.WIDTH");
@@ -96,7 +143,7 @@ export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
                 let breakLogic = false;
                 //sort transport according to check order
                 // sortTransportsByCheckOrder();
-                transports.forEach((transport) => {
+                props.transports.forEach((transport) => {
                     if (
                         breakLogic == false &&
                         firstDimension <= transport.transportFirstDimension &&
@@ -136,7 +183,7 @@ export default function CheckTransport({ api }: { api: WorkspaceAPI }) {
     return (
         <div>
             <br></br>
-                <ModusButton >
+                <ModusButton onClick={triggerTest}>
                     Check Transport
                 </ModusButton>
                 <ModusTreeView className="filtered-objects" size="condensed">

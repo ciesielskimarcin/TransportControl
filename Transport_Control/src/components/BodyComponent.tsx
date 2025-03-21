@@ -4,7 +4,13 @@ import { TransportType } from "../Enums/TransportType";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import ActionBar from './ActionBar'
 import TransportCategoriesList from "./TransportCategoriesList";
+import CheckTransport from "./CheckTransport";
 import _ from "lodash";
+import { WorkspaceAPI } from "trimble-connect-workspace-api";
+
+type BodyComponentProps = {
+    api : WorkspaceAPI
+}
 
 const initialState = [{
     name: "Standard",
@@ -47,7 +53,7 @@ const initialState = [{
     elements: [],
 },]
 
-export default function BodyComponent(){
+export default function BodyComponent(props: BodyComponentProps){
 
     const [transports, setTransports] = useState<TransportTypeEntity[]>(initialState)
 
@@ -55,7 +61,8 @@ export default function BodyComponent(){
         <>
           <div>
             <ActionBar />
-            <TransportCategoriesList/>
+            <TransportCategoriesList chuj={transports} />
+            <CheckTransport transports={transports} api={props.api}/>
             {/* <CheckTransport/> */}
           </div>
         </>
