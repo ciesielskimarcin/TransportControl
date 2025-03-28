@@ -1,23 +1,23 @@
-import { ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
+import { ModusButton, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
 import { useState } from "react";
 import { TransportType } from "../Enums/TransportType";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import _ from "lodash";
 
 type TransportCategoriesListProps = {
-    chuj: TransportTypeEntity[]
+    transports: TransportTypeEntity[]
+    giveTransportName: (id: string) => void
 }
 
 export default function TransportCategoriesList(props: TransportCategoriesListProps) {
 
 
 
-    const [transportName, setTransportName] = useState("");
-
-    function giveTransportName(id: string) {
-        setTransportName(id);
-        console.log("tranportname:", id);
-    };
+    // const [transportName, setTransportName] = useState("");
+    // function giveTransportName(id: string) {
+    //     setTransportName(id);
+    //     console.log("tranportname:", id);
+    // };
 
 
 
@@ -26,9 +26,9 @@ export default function TransportCategoriesList(props: TransportCategoriesListPr
             <ModusTreeView size="condensed">
                 <ModusTreeViewItem nodeId="2" label="Transport categories" id="tree-with-transports">
                     {
-                        _.map(_.groupBy(props.chuj, (p => p.name)), (val, key) =>
+                        _.map(_.groupBy(props.transports, (p => p.name)), (val, key) =>
                             <ModusTreeViewItem id="transports_entities" onItemClick={(() => {
-                                giveTransportName(key)
+                                props.giveTransportName(key)
                             })}
                                 nodeId={key}
                                 label={key}

@@ -14,6 +14,7 @@ type ObjectWithValue = {
 type CheckTransportProps = {
     transports: TransportTypeEntity[]
     api: WorkspaceAPI
+    sortTransportsByCheckOrder: () => void
 }
 
 export default function CheckTransport(props: CheckTransportProps) {
@@ -22,6 +23,7 @@ export default function CheckTransport(props: CheckTransportProps) {
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
     const [filteredObjects, setFilteredObjects] = useState<ObjectWithValue[]>([]);
     const modelId = useRef<string>('');
+    const [breakFunction, setBreakFunction] = useState(false);
 
     useEffect(() => {
         async function getObjectsProperties() {
@@ -36,7 +38,7 @@ export default function CheckTransport(props: CheckTransportProps) {
 
     }, [matchedObjects]);
 
-    
+
     async function getPropertyValue(modelId: string, objectId: number, propertyName: string): Promise<string> {
 
         const splitted = propertyName.split('.')
@@ -71,7 +73,6 @@ export default function CheckTransport(props: CheckTransportProps) {
      */
     function showSelectedGroup(groupName: string) {
 
-        console.log("IM HERE")
         const filtered = matchedObjects.filter(obj => obj.value === groupName);
         setFilteredObjects(filtered);
 
@@ -89,6 +90,8 @@ export default function CheckTransport(props: CheckTransportProps) {
         console.log("newModelId: ", newModelId)
         console.log("filtered: ", objectSelector);
     }
+
+
 
     async function triggerTest() {
         setListOfArrays([]);
@@ -142,7 +145,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const handleCheck = () => {
                 let breakLogic = false;
                 //sort transport according to check order
-                // sortTransportsByCheckOrder();
+                props.sortTransportsByCheckOrder();
                 props.transports.forEach((transport) => {
                     if (
                         breakLogic == false &&
@@ -166,8 +169,6 @@ export default function CheckTransport(props: CheckTransportProps) {
             handleCheck();
 
         };
-        console.log([listOfArrays]);
-        console.log("Matched Objects:", [matchedObjects]);
 
         //TODO - set message when "Check Transport" function is done
         const showMessage = () => {
@@ -175,36 +176,50 @@ export default function CheckTransport(props: CheckTransportProps) {
         };
 
         showMessage();
-        <ModusMessage type="info">Szlugi, Woda, Gruba baba!</ModusMessage>
 
+    }
+
+    console.log('listOfArrays: ', [listOfArrays]);
+    console.log("Matched Objects outside code:", [matchedObjects]);
+
+    function clear() {
+        setBreakFunction(true);
+        console.log('setBreakFunction: ', breakFunction)
+        setMatchedObjects([]);
+        setListOfArrays([]);
     }
 
 
     return (
         <div>
             <br></br>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
                 <ModusButton onClick={triggerTest}>
                     Check Transport
                 </ModusButton>
-                <ModusTreeView className="filtered-objects" size="condensed">
-                    {
-                        _.map(_.groupBy(matchedObjects, (p => p.value)), (val, key) =>
-                            <ModusTreeViewItem onItemClick={(() => showSelectedGroup(key))}
-                                nodeId={key}
-                                label={key}>
-                                {
-                                    val.map(o =>
-                                        <ModusTreeViewItem
-                                            nodeId={o.properties.id.toString()}
-                                            label={o.productName + " - id: " + o.properties.id.toString()}>
-                                        </ModusTreeViewItem>
-                                    )
-                                }
-                            </ModusTreeViewItem>
-                        )
-                    }
-                </ModusTreeView>
+                <ModusButton onClick={clear}>
+                    Clear
+                </ModusButton>
+            </div>
+            <ModusTreeView className="filtered-objects" size="condensed">
+                {
+                    _.map(_.groupBy(matchedObjects, (p => p.value)), (val, key) =>
+                        <ModusTreeViewItem onItemClick={(() => showSelectedGroup(key))}
+                            nodeId={key}
+                            label={key}>
+                            {
+                                val.map(o =>
+                                    <ModusTreeViewItem
+                                        nodeId={o.properties.id.toString()}
+                                        label={o.productName + " - id: " + o.properties.id.toString()}>
+                                    </ModusTreeViewItem>
+                                )
+                            }
+                        </ModusTreeViewItem>
+                    )
+                }
+            </ModusTreeView>
         </div>
-        
+
     )
 }

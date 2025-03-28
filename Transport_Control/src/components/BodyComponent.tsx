@@ -9,7 +9,7 @@ import _ from "lodash";
 import { WorkspaceAPI } from "trimble-connect-workspace-api";
 
 type BodyComponentProps = {
-    api : WorkspaceAPI
+    api: WorkspaceAPI
 }
 
 const initialState = [{
@@ -53,19 +53,60 @@ const initialState = [{
     elements: [],
 },]
 
-export default function BodyComponent(props: BodyComponentProps){
+
+
+
+export default function BodyComponent(props: BodyComponentProps) {
 
     const [transports, setTransports] = useState<TransportTypeEntity[]>(initialState)
+    const [transportName, setTransportName] = useState("");
+    const container = document.querySelector("div[id='tree-with-transports']");
+    const root = container?.querySelector('modus-tree-view');
+    const addButton = container?.querySelector<HTMLButtonElement>("modus-button[id='add']");
+    const removeButton = container?.querySelector<HTMLButtonElement>("modus-button[id='remove']");
+    const editButton = container?.querySelector<HTMLButtonElement>("modus-button[id='edit']");
+
+    const dupaButton = container?.querySelector<HTMLButtonElement>("modus-button[id='dupa']");
+
+    const sortTransportsByCheckOrder = () => {
+        setTransports((prevTransports) => {
+            return [...prevTransports].sort((a, b) => {
+                if (a.checkOrder === null && b.checkOrder === null) return 0;
+                if (a.checkOrder === null) return 1; // `null` values go to the end
+                if (b.checkOrder === null) return -1;
+                return a.checkOrder - b.checkOrder; // Sort ascending by `checkOrder`
+            });
+        });
+    };
+
+    function giveTransportName(id: string) {
+        setTransportName(id);
+        console.log("tranportname:", id);
+        console.log("container:", container);
+        console.log("root:", root);
+        console.log("addButton:", addButton);
+        console.log("removeButton:", removeButton);
+        console.log("dupaButton:", dupaButton);
+
+    };
 
     return (
         <>
-          <div>
-            <ActionBar />
-            <TransportCategoriesList chuj={transports} />
-            <CheckTransport transports={transports} api={props.api}/>
-            {/* <CheckTransport/> */}
-          </div>
+            <div className="content-panel" id="tree-with-transports">
+                <ActionBar
+                    transports={transports}
+                    setTransports={setTransports}
+                    sortTransportsByCheckOrder={sortTransportsByCheckOrder}
+                    transportName={transportName}
+                    container={container}
+                    root={root}
+                    addButton={addButton}
+                    removeButton={removeButton}
+                    editButton={editButton} />
+                <TransportCategoriesList transports={transports} giveTransportName={giveTransportName} />
+                <CheckTransport transports={transports} api={props.api} sortTransportsByCheckOrder={sortTransportsByCheckOrder}/>
+            </div>
         </>
-      )
-    
+    )
+
 }
