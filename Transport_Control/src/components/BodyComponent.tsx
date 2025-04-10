@@ -60,13 +60,14 @@ export default function BodyComponent(props: BodyComponentProps) {
 
     const [transports, setTransports] = useState<TransportTypeEntity[]>(initialState)
     const [transportName, setTransportName] = useState("");
+    const [selectedtransport, setSelectedTransport] = useState<TransportTypeEntity>();
+    const [index, setIndex] = useState<number>(0);
     const container = document.querySelector("div[id='tree-with-transports']");
     const root = container?.querySelector('modus-tree-view');
     const addButton = container?.querySelector<HTMLButtonElement>("modus-button[id='add']");
     const removeButton = container?.querySelector<HTMLButtonElement>("modus-button[id='remove']");
     const editButton = container?.querySelector<HTMLButtonElement>("modus-button[id='edit']");
 
-    const dupaButton = container?.querySelector<HTMLButtonElement>("modus-button[id='dupa']");
 
     const sortTransportsByCheckOrder = () => {
         setTransports((prevTransports) => {
@@ -81,14 +82,16 @@ export default function BodyComponent(props: BodyComponentProps) {
 
     function giveTransportName(id: string) {
         setTransportName(id);
+        const transport = transports.find(item => item.name === id);
+        setSelectedTransport(transport);
         console.log("tranportname:", id);
         console.log("container:", container);
         console.log("root:", root);
         console.log("addButton:", addButton);
         console.log("removeButton:", removeButton);
-        console.log("dupaButton:", dupaButton);
-
+        console.log("transport list:", transports);
     };
+
 
     return (
         <>
@@ -102,7 +105,8 @@ export default function BodyComponent(props: BodyComponentProps) {
                     root={root}
                     addButton={addButton}
                     removeButton={removeButton}
-                    editButton={editButton} />
+                    editButton={editButton}
+                    selectedtransport={selectedtransport} />
                 <TransportCategoriesList transports={transports} giveTransportName={giveTransportName} />
                 <CheckTransport transports={transports} api={props.api} sortTransportsByCheckOrder={sortTransportsByCheckOrder}/>
             </div>

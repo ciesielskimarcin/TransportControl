@@ -1,6 +1,6 @@
 import { ModusButton, ModusMessage, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TransportType } from "../Enums/TransportType";
 
 type ActionBarProps = {
@@ -13,19 +13,14 @@ type ActionBarProps = {
     addButton: any
     removeButton: any
     editButton: any
+    selectedtransport: TransportTypeEntity | undefined
 }
 
 
-
-
-export default function ActionBar(props:ActionBarProps) {
-
-
-    // const addButton = container?.querySelector<HTMLButtonElement>("modus-button[id='add']");
-    // const removeButton = container?.querySelector<HTMLButtonElement>("modus-button[id='remove']");
-    // const editButton = container?.querySelector<HTMLButtonElement>("modus-button[id='edit']");
+export default function ActionBar(props: ActionBarProps) {
 
     const [showForm, setShowForm] = useState(false);
+    const [showEditForm, setShowEditForm] = useState(false);
     const [newTransport, setNewTransport] = useState<TransportTypeEntity>({
         name: "",
         checkOrder: 0,
@@ -37,16 +32,31 @@ export default function ActionBar(props:ActionBarProps) {
         elements: [],
     });
 
+    const [newEditTransport, setNewEditTransport] = useState<TransportTypeEntity | undefined>();
+
+    useEffect(() => {
+
+        setNewEditTransport({ ...props.selectedtransport })
+
+    }, [props.selectedtransport]);
+
     const handleAddTransport = () => {
-        if (props.addButton?.disabled == false){
+        if (props.addButton?.disabled == false) {
             setShowForm((prev) => !prev);
         }
-        else [
+        else[
         ]
     };
 
-    const handleInputChange = (field: keyof TransportTypeEntity, value: any) => {
+    const handleNewInputChange = (field: keyof TransportTypeEntity, value: any) => {
         setNewTransport((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleEditInputChange = (field: keyof TransportTypeEntity, value: any) => {
+        setNewEditTransport((prev) => ({
             ...prev,
             [field]: value,
         }));
@@ -69,15 +79,35 @@ export default function ActionBar(props:ActionBarProps) {
         props.sortTransportsByCheckOrder();
     };
 
+    const handleSaveEditTransport = () => {
+
+        const updatedTransports = props.transports.map(transport =>
+            transport.name === newEditTransport.name ? newEditTransport : transport
+        );
+        props.setTransports(updatedTransports);
+
+        setShowEditForm(false);
+
+    };
+
     const handleRemoveTransport = () => {
         if (props.addButton?.disabled == false) {
-            props.setTransports((prevTransports) => 
+            props.setTransports((prevTransports) =>
                 prevTransports.filter((transport) => transport.name !== props.transportName)
             );
         }
         else {
 
         }
+    };
+
+    const handleEditTransport = () => {
+        if (props.addButton?.disabled == false) {
+            setShowEditForm((prev) => !prev);
+        }
+        else[
+        ]
+
     };
 
     const disableButtons = (disable: boolean): void => {
@@ -111,7 +141,7 @@ export default function ActionBar(props:ActionBarProps) {
 
 
     return (
-        <div 
+        <div
             style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -160,7 +190,7 @@ export default function ActionBar(props:ActionBarProps) {
                             fill="#252a2e" />
                     </svg>
                 </ModusButton>
-                <ModusButton
+                <ModusButton onClick={() => handleEditTransport()}
                     button-style="borderless"
                     size="small"
                     aria-label="Edit"
@@ -187,7 +217,7 @@ export default function ActionBar(props:ActionBarProps) {
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="text"
                             value={newTransport.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            onChange={(e) => handleNewInputChange("name", e.target.value)}
                         />
                     </label>
                     <label className="teklaFont">
@@ -195,7 +225,7 @@ export default function ActionBar(props:ActionBarProps) {
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
                             value={newTransport.checkOrder}
-                            onChange={(e) => handleInputChange("checkOrder", e.target.value)}
+                            onChange={(e) => handleNewInputChange("checkOrder", e.target.value)}
                         />
                     </label>
                     <label className="teklaFont">
@@ -204,7 +234,7 @@ export default function ActionBar(props:ActionBarProps) {
                             type="number"
                             value={newTransport.transportFirstDimension}
                             onChange={(e) =>
-                                handleInputChange(
+                                handleNewInputChange(
                                     "transportFirstDimension",
                                     parseFloat(e.target.value)
                                 )
@@ -217,7 +247,7 @@ export default function ActionBar(props:ActionBarProps) {
                             type="number"
                             value={newTransport.transportSecondDimension}
                             onChange={(e) =>
-                                handleInputChange(
+                                handleNewInputChange(
                                     "transportSecondDimension",
                                     parseFloat(e.target.value)
                                 )
@@ -230,7 +260,7 @@ export default function ActionBar(props:ActionBarProps) {
                             type="number"
                             value={newTransport.transportThirdDimension}
                             onChange={(e) =>
-                                handleInputChange(
+                                handleNewInputChange(
                                     "transportThirdDimension",
                                     parseFloat(e.target.value)
                                 )
@@ -243,11 +273,83 @@ export default function ActionBar(props:ActionBarProps) {
                             type="number"
                             value={newTransport.weight}
                             onChange={(e) =>
-                                handleInputChange("weight", parseFloat(e.target.value))
+                                handleNewInputChange("weight", parseFloat(e.target.value))
                             }
                         />
                     </label>
                     <ModusButton onClick={handleSaveTransport}>Add</ModusButton>
+                </div>
+            )}
+
+            {showEditForm && (
+                <div style={{ padding: '10px 0px 0px 0px' }}>
+                    <label className="teklaFont" >
+                        Name:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="text"
+                            value={newEditTransport.name}
+                            placeholder={props.transportName}
+                            onChange={(e) => handleEditInputChange("name", e.target.value)}
+                        />
+                    </label>
+                    <label className="teklaFont">
+                        Check order:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="number"
+                            value={newEditTransport.checkOrder}
+                            onChange={(e) => handleEditInputChange("checkOrder", e.target.value)}
+                        />
+                    </label>
+                    <label className="teklaFont">
+                        First Dimension:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="number"
+                            value={newEditTransport.transportFirstDimension}
+                            onChange={(e) =>
+                                handleEditInputChange(
+                                    "transportFirstDimension",
+                                    parseFloat(e.target.value)
+                                )
+                            }
+                        />
+                    </label>
+                    <label className="teklaFont">
+                        Second Dimension:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="number"
+                            value={newEditTransport.transportSecondDimension}
+                            onChange={(e) =>
+                                handleEditInputChange(
+                                    "transportSecondDimension",
+                                    parseFloat(e.target.value)
+                                )
+                            }
+                        />
+                    </label>
+                    <label className="teklaFont">
+                        Third Dimension:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="number"
+                            value={newEditTransport.transportThirdDimension}
+                            onChange={(e) =>
+                                handleEditInputChange(
+                                    "transportThirdDimension",
+                                    parseFloat(e.target.value)
+                                )
+                            }
+                        />
+                    </label>
+                    <label className="teklaFont">
+                        Weight:
+                        <input style={{ flex: '2', maxWidth: '120px' }}
+                            type="number"
+                            value={newEditTransport.weight}
+                            onChange={(e) =>
+                                handleEditInputChange("weight", parseFloat(e.target.value))
+                            }
+                        />
+                    </label>
+                    <ModusButton onClick={handleSaveEditTransport}>Edit</ModusButton>
                 </div>
             )}
         </div>
