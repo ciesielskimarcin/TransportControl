@@ -203,10 +203,10 @@ export default function CheckTransport(props: CheckTransportProps) {
             </div>
             <ModusTreeView className="filtered-objects" size="condensed">
                 {
-                    _.map(_.groupBy(matchedObjects, (p => p.value)), (val, key) =>
-                        <ModusTreeViewItem onItemClick={(() => showSelectedGroup(key))}
+                    _.map(_.groupBy(matchedObjects, (p => p.order)), (val, key) =>
+                        <ModusTreeViewItem onItemClick={(() => showSelectedGroup(val[0].value))}
                             nodeId={key}
-                            label={key}>
+                            label={val[0].value}>
                             {
                                 val.map(o =>
                                     <ModusTreeViewItem
