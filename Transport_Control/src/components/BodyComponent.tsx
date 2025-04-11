@@ -1,5 +1,5 @@
 import { ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransportType } from "../Enums/TransportType";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import ActionBar from './ActionBar'
@@ -58,15 +58,29 @@ const initialState = [{
 
 export default function BodyComponent(props: BodyComponentProps) {
 
-    const [transports, setTransports] = useState<TransportTypeEntity[]>(initialState)
+    const [transports, setTransports] = useState<TransportTypeEntity[]>(() => {
+        const saved = localStorage.getItem("transports");
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse transports from localStorage:", e);
+            }
+        }
+        return initialState;
+    });
     const [transportName, setTransportName] = useState("");
     const [selectedtransport, setSelectedTransport] = useState<TransportTypeEntity>();
-    const [index, setIndex] = useState<number>(0);
     const container = document.querySelector("div[id='tree-with-transports']");
     const root = container?.querySelector('modus-tree-view');
     const addButton = container?.querySelector<HTMLButtonElement>("modus-button[id='add']");
     const removeButton = container?.querySelector<HTMLButtonElement>("modus-button[id='remove']");
     const editButton = container?.querySelector<HTMLButtonElement>("modus-button[id='edit']");
+    
+    
+    useEffect(() => {
+        localStorage.setItem("transports", JSON.stringify(transports));
+    }, [transports]);
 
 
     const sortTransportsByCheckOrder = () => {
@@ -92,6 +106,11 @@ export default function BodyComponent(props: BodyComponentProps) {
         console.log("transport list:", transports);
     };
 
+    const resetTransports = () => {
+        setTransports(initialState);
+        localStorage.removeItem("transports");
+    };
+
 
     return (
         <>
@@ -106,9 +125,11 @@ export default function BodyComponent(props: BodyComponentProps) {
                     addButton={addButton}
                     removeButton={removeButton}
                     editButton={editButton}
-                    selectedtransport={selectedtransport} />
+                    selectedtransport={selectedtransport}
+                    setSelectedTransport={setSelectedTransport} />
                 <TransportCategoriesList transports={transports} giveTransportName={giveTransportName} />
                 <CheckTransport transports={transports} api={props.api} sortTransportsByCheckOrder={sortTransportsByCheckOrder}/>
+                <button onClick={resetTransports}>Delete Local Storage</button>
             </div>
         </>
     )

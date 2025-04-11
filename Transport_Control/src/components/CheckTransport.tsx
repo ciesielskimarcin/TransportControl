@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ObjectProperties, ObjectSelector, WorkspaceAPI } from "trimble-connect-workspace-api";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import _ from "lodash";
+import { ModusTreeViewItemCustomEvent } from "@trimble-oss/modus-web-components/dist/types/components";
 
 type ObjectWithValue = {
     properties: ObjectProperties,
@@ -19,6 +20,7 @@ type CheckTransportProps = {
 
 export default function CheckTransport(props: CheckTransportProps) {
 
+    const cancelTriggerRef = useRef(false);
     const [listOfArrays, setListOfArrays] = useState<number[][]>([]);
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
     const [filteredObjects, setFilteredObjects] = useState<ObjectWithValue[]>([]);
@@ -91,11 +93,30 @@ export default function CheckTransport(props: CheckTransportProps) {
         console.log("filtered: ", objectSelector);
     }
 
+    function showSelectedItem(itemId: number, e: ModusTreeViewItemCustomEvent<boolean>) {
+        e.stopPropagation();
+        const filtered = matchedObjects.filter(obj => obj.properties.id === itemId);
+        setFilteredObjects(filtered);
+
+        const newModelId = modelId.current;
+
+        const objectSelector: ObjectSelector = {
+            modelObjectIds: [{ modelId: newModelId, objectRuntimeIds: filtered.map(r => r.properties.id) }]
+        };
+
+
+        props.api.viewer.setSelection(objectSelector, "set");
+        console.log("filtered: ", filtered);
+        console.log("objectSelector: ", objectSelector);
+        console.log("Ten Jeden Element!!!");
+    }
+
 
 
     async function triggerTest() {
         setListOfArrays([]);
         setMatchedObjects([]);
+        cancelTriggerRef.current = false;
         const result: ObjectWithValue[] = [];
 
         // variable with all selected objects in TC. Selection is an array of ModelObjectsIds
@@ -110,6 +131,15 @@ export default function CheckTransport(props: CheckTransportProps) {
 
         const bBoxes = await props.api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
         for (let i = 0; i < bBoxes.length; i++) {
+
+            if (cancelTriggerRef.current) {
+                setMatchedObjects([]);
+                setListOfArrays([]);
+                console.log('Trigger test was cancelled.');
+                return;
+            }
+
+
             const bBox = bBoxes[i];
 
             const newArray: number[] = [];
@@ -172,7 +202,9 @@ export default function CheckTransport(props: CheckTransportProps) {
 
         //TODO - set message when "Check Transport" function is done
         const showMessage = () => {
-            alert('Check Tranposrt is done');
+            if (!cancelTriggerRef.current) {
+                alert('Check Transport is done');
+            }
         };
 
         showMessage();
@@ -183,10 +215,10 @@ export default function CheckTransport(props: CheckTransportProps) {
     console.log("Matched Objects outside code:", [matchedObjects]);
 
     function clear() {
-        setBreakFunction(true);
-        console.log('setBreakFunction: ', breakFunction)
+        cancelTriggerRef.current = true;
         setMatchedObjects([]);
         setListOfArrays([]);
+        console.log('Check was canceled')
     }
 
 
@@ -209,7 +241,7 @@ export default function CheckTransport(props: CheckTransportProps) {
                             label={val[0].value}>
                             {
                                 val.map(o =>
-                                    <ModusTreeViewItem
+                                    <ModusTreeViewItem onItemClick={((e) => showSelectedItem(o.properties.id, e))}
                                         nodeId={o.properties.id.toString()}
                                         label={o.productName + " - id: " + o.properties.id.toString()}>
                                     </ModusTreeViewItem>

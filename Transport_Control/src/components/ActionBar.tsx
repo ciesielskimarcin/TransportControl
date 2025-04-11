@@ -14,6 +14,7 @@ type ActionBarProps = {
     removeButton: any
     editButton: any
     selectedtransport: TransportTypeEntity | undefined
+    setSelectedTransport: React.Dispatch<React.SetStateAction<TransportTypeEntity | undefined>> 
 }
 
 
@@ -110,30 +111,29 @@ export default function ActionBar(props: ActionBarProps) {
 
     };
 
-    const disableButtons = (disable: boolean): void => {
-        if (props.addButton) {
-            props.addButton.disabled = disable;
-        }
-        if (props.removeButton) {
-            props.removeButton.disabled = disable;
-        }
-        if (props.editButton) {
-            props.editButton.disabled = disable;
-        }
-        else {
-            console.error('One or more buttons could not be found in the DOM.');
-        }
-    };
+    // const disableButtons = (disable: boolean): void => {
+    //     if (props.addButton) {
+    //         props.addButton.disabled = disable;
+    //     }
+    //     if (props.removeButton) {
+    //         props.removeButton.disabled = disable;
+    //     }
+    //     if (props.editButton) {
+    //         props.editButton.disabled = disable;
+    //     }
+    //     else {
+    //         console.error('One or more buttons could not be found in the DOM.');
+    //     }
+    // };
 
     if (props.container && props.root) {  // Ensure 'container' and 'root' exist before using them
         props.container.addEventListener('itemClick', () => {
             // Assuming 'root' has a property 'selectedItems'
-            if (props.root.selectedItems.length > 0) {
-                disableButtons(false);
-            } else {
-                disableButtons(true);
+            if (props.root.selectedItems.length === 0) {
+                props.setSelectedTransport(undefined);
+                setShowForm(false);
+                setShowEditForm(false);
             }
-            console.log("addEventListener")
         });
     } else {
         console.error('Container or root element is null.');
@@ -159,8 +159,8 @@ export default function ActionBar(props: ActionBarProps) {
                     aria-label="Add"
                     title="Add"
                     size="small"
-                    disabled={!props.transportName}
                     color="primary"
+                    disabled = {!props.selectedtransport}
                     id="add">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -177,7 +177,7 @@ export default function ActionBar(props: ActionBarProps) {
                     title="Remove"
                     size="small"
                     color="primary"
-                    disabled={!props.transportName}
+                    disabled = {!props.selectedtransport}
                     id="remove">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -196,7 +196,7 @@ export default function ActionBar(props: ActionBarProps) {
                     aria-label="Edit"
                     title="Edit"
                     color="primary"
-                    disabled={!props.transportName}
+                    disabled = {!props.selectedtransport}
                     id="edit">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
