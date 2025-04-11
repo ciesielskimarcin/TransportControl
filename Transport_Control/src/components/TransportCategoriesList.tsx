@@ -1,6 +1,4 @@
-import { ModusButton, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
-import { useState } from "react";
-import { TransportType } from "../Enums/TransportType";
+import { ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import _ from "lodash";
 

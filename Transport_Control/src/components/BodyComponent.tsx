@@ -126,10 +126,10 @@ export default function BodyComponent(props: BodyComponentProps) {
                     removeButton={removeButton}
                     editButton={editButton}
                     selectedtransport={selectedtransport}
-                    setSelectedTransport={setSelectedTransport} />
+                    setSelectedTransport={setSelectedTransport}
+                    resetTransports={resetTransports} />
                 <TransportCategoriesList transports={transports} giveTransportName={giveTransportName} />
                 <CheckTransport transports={transports} api={props.api} sortTransportsByCheckOrder={sortTransportsByCheckOrder}/>
-                <button onClick={resetTransports}>Delete Local Storage</button>
             </div>
         </>
     )

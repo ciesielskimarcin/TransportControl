@@ -1,4 +1,4 @@
-import { ModusButton, ModusMessage, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
+import { ModusButton, ModusTreeView, ModusTreeViewItem } from "@trimble-oss/modus-react-components"
 import { useEffect, useRef, useState } from "react";
 import { ObjectProperties, ObjectSelector, WorkspaceAPI } from "trimble-connect-workspace-api";
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
@@ -25,7 +25,6 @@ export default function CheckTransport(props: CheckTransportProps) {
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
     const [filteredObjects, setFilteredObjects] = useState<ObjectWithValue[]>([]);
     const modelId = useRef<string>('');
-    const [breakFunction, setBreakFunction] = useState(false);
 
     useEffect(() => {
         async function getObjectsProperties() {
@@ -208,7 +207,6 @@ export default function CheckTransport(props: CheckTransportProps) {
         };
 
         showMessage();
-
     }
 
     console.log('listOfArrays: ', [listOfArrays]);
