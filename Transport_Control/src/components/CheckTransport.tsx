@@ -155,11 +155,9 @@ export default function CheckTransport(props: CheckTransportProps) {
 
 
             const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.widthProperty);
+            const width = changeStringToNumber(widthResult);
             if (
-                widthResult === null ||
-                widthResult === undefined ||
-                widthResult === "" ||
-                widthResult === "NOTDEFINED"
+                Number.isNaN(width)
             ) {
                 result.push({
                     properties: bBox,
@@ -168,18 +166,13 @@ export default function CheckTransport(props: CheckTransportProps) {
                     order: 100,
                 });
                 continue;
-            }
-            else {
-                const width = changeStringToNumber(widthResult);
+            }            
                 newArray.push(width);
-            }
 
             const heightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.heightProperty);
+            const height = changeStringToNumber(heightResult);
             if (
-                heightResult === null ||
-                heightResult === undefined ||
-                heightResult === "" ||
-                heightResult === "NOTDEFINED"
+                Number.isNaN(height)
             ) {
                 result.push({
                     properties: bBox,
@@ -190,17 +183,14 @@ export default function CheckTransport(props: CheckTransportProps) {
                 continue;
             }
             else {
-                const height = changeStringToNumber(heightResult);
                 newArray.push(height);
             }
 
 
             const lengthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.lengthProperty);
+            const length = changeStringToNumber(lengthResult);
             if (
-                lengthResult === null ||
-                lengthResult === undefined ||
-                lengthResult === "" ||
-                lengthResult === "NOTDEFINED"
+                Number.isNaN(length)
             ) {
                 result.push({
                     properties: bBox,
@@ -211,17 +201,14 @@ export default function CheckTransport(props: CheckTransportProps) {
                 continue;
             }
             else {
-                const length = changeStringToNumber(lengthResult);
                 newArray.push(length);
             }
 
 
             const weightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.weightProperty);
+            const weight = changeStringToNumber(weightResult);
             if (
-                weightResult === null ||
-                weightResult === undefined ||
-                weightResult === "" ||
-                weightResult === "NOTDEFINED"
+                Number.isNaN(weight)
             ) {
                 result.push({
                     properties: bBox,
@@ -232,7 +219,6 @@ export default function CheckTransport(props: CheckTransportProps) {
                 continue;
             }
             else {
-                const weight = changeStringToNumber(weightResult);
                 newWeight.push(weight);
             }
 
