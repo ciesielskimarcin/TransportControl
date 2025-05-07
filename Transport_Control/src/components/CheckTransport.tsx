@@ -123,8 +123,19 @@ export default function CheckTransport(props: CheckTransportProps) {
         const result: ObjectWithValue[] = [];
 
         // variable with all selected objects in TC. Selection is an array of ModelObjectsIds
+        const modelObjects = await props.api.viewer.getObjects();
+        if (modelObjects.length !== 1) {
+            alert('Please activate only one model.')
+            return;
+        }
+
         const selection = await props.api.viewer.getSelection();
-        if (selection.length == 0) return;
+        if (selection.length == 0) {
+            alert('Please select the elements.');
+            return;
+        }
+
+        console.log("selection:   ", selection)
 
         // selecting first Model from TC 
         var firstSelection = selection[0];
@@ -166,8 +177,8 @@ export default function CheckTransport(props: CheckTransportProps) {
                     order: 100,
                 });
                 continue;
-            }            
-                newArray.push(width);
+            }
+            newArray.push(width);
 
             const heightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.heightProperty);
             const height = changeStringToNumber(heightResult);
@@ -230,7 +241,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const firstDimension = sortedArray[0];
             const secondDimension = sortedArray[1];
             const thirdDimension = sortedArray[2];
-            
+
             const weightDimension = newWeight[0];
 
 
@@ -259,7 +270,7 @@ export default function CheckTransport(props: CheckTransportProps) {
         //TODO - set message when "Check Transport" function is done
         const showMessage = () => {
             if (!cancelTriggerRef.current) {
-                alert('Check Transport is done');
+                alert('Check Transport has been completed.');
             }
         };
 
