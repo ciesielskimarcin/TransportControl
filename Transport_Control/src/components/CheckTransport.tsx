@@ -4,6 +4,7 @@ import { ObjectProperties, ObjectSelector, WorkspaceAPI } from "trimble-connect-
 import { TransportTypeEntity } from "../Entities/TransportTypeEntity";
 import _ from "lodash";
 import { ModusTreeViewItemCustomEvent } from "@trimble-oss/modus-web-components/dist/types/components";
+import { PropertiesNamesEntity } from "../Entities/PropertiesNamesEntity";
 
 type ObjectWithValue = {
     properties: ObjectProperties,
@@ -13,9 +14,10 @@ type ObjectWithValue = {
 }
 
 type CheckTransportProps = {
-    transports: TransportTypeEntity[]
-    api: WorkspaceAPI
-    sortTransportsByCheckOrder: () => void
+    transports: TransportTypeEntity[],
+    api: WorkspaceAPI,
+    sortTransportsByCheckOrder: () => void,
+    propertiesNames: PropertiesNamesEntity
 }
 
 export default function CheckTransport(props: CheckTransportProps) {
@@ -47,6 +49,8 @@ export default function CheckTransport(props: CheckTransportProps) {
         const propertyType = splitted[1];
 
         const properties = await props.api.viewer.getObjectProperties(modelId, [objectId]);
+
+        console.log("HERE!! object properites: ", properties[0].properties);
 
         const propss = properties[0].properties;
         if (propss === undefined) return '';
@@ -129,6 +133,7 @@ export default function CheckTransport(props: CheckTransportProps) {
         //console.log("first selection.objectsRuntimeIds", firstSelection);
 
         const bBoxes = await props.api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
+        console.log("bBoxes: ", bBoxes);
         for (let i = 0; i < bBoxes.length; i++) {
 
             if (cancelTriggerRef.current) {
@@ -142,24 +147,94 @@ export default function CheckTransport(props: CheckTransportProps) {
             const bBox = bBoxes[i];
 
             const newArray: number[] = [];
+            const newWeight: number[] = [];
 
             const productName = await props.api.viewer.getObjectProperties(firstSelection.modelId, [bBox.id]);
             const productNameResult = productName[0].product?.name;
+            console.log("productName", productName)
 
-            const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, "Dimensions.WIDTH");
-            const width = changeStringToNumber(widthResult);
-            newArray.push(width);
 
-            const heightResult = await getPropertyValue(firstSelection.modelId, bBox.id, "Dimensions.HEIGHT");
-            const height = changeStringToNumber(heightResult);
-            newArray.push(height);
+            const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.widthProperty);
+            if (
+                widthResult === null ||
+                widthResult === undefined ||
+                widthResult === "" ||
+                widthResult === "NOTDEFINED"
+            ) {
+                result.push({
+                    properties: bBox,
+                    value: "NoData",
+                    productName: productNameResult,
+                    order: 100,
+                });
+                continue;
+            }
+            else {
+                const width = changeStringToNumber(widthResult);
+                newArray.push(width);
+            }
 
-            const lengthResult = await getPropertyValue(firstSelection.modelId, bBox.id, "Dimensions.LENGTH");
-            const length = changeStringToNumber(lengthResult);
-            newArray.push(length);
+            const heightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.heightProperty);
+            if (
+                heightResult === null ||
+                heightResult === undefined ||
+                heightResult === "" ||
+                heightResult === "NOTDEFINED"
+            ) {
+                result.push({
+                    properties: bBox,
+                    value: "NoData",
+                    productName: productNameResult,
+                    order: 100,
+                });
+                continue;
+            }
+            else {
+                const height = changeStringToNumber(heightResult);
+                newArray.push(height);
+            }
 
-            const weightResult = await getPropertyValue(firstSelection.modelId, bBox.id, "Dimensions.WEIGHT");
-            const weight = changeStringToNumber(weightResult);
+
+            const lengthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.lengthProperty);
+            if (
+                lengthResult === null ||
+                lengthResult === undefined ||
+                lengthResult === "" ||
+                lengthResult === "NOTDEFINED"
+            ) {
+                result.push({
+                    properties: bBox,
+                    value: "NoData",
+                    productName: productNameResult,
+                    order: 100,
+                });
+                continue;
+            }
+            else {
+                const length = changeStringToNumber(lengthResult);
+                newArray.push(length);
+            }
+
+
+            const weightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.weightProperty);
+            if (
+                weightResult === null ||
+                weightResult === undefined ||
+                weightResult === "" ||
+                weightResult === "NOTDEFINED"
+            ) {
+                result.push({
+                    properties: bBox,
+                    value: "NoData",
+                    productName: productNameResult,
+                    order: 100,
+                });
+                continue;
+            }
+            else {
+                const weight = changeStringToNumber(weightResult);
+                newWeight.push(weight);
+            }
 
             const sortedArray = [...newArray].sort((a, b) => a - b);
 
@@ -169,34 +244,30 @@ export default function CheckTransport(props: CheckTransportProps) {
             const firstDimension = sortedArray[0];
             const secondDimension = sortedArray[1];
             const thirdDimension = sortedArray[2];
+            
+            const weightDimension = newWeight[0];
 
 
-            const handleCheck = () => {
-                let breakLogic = false;
-                //sort transport according to check order
-                props.sortTransportsByCheckOrder();
-                props.transports.forEach((transport) => {
-                    if (
-                        breakLogic == false &&
-                        firstDimension <= transport.transportFirstDimension &&
-                        secondDimension <= transport.transportSecondDimension &&
-                        thirdDimension <= transport.transportThirdDimension &&
-                        weight <= transport.weight
-                    ) {
-                        result.push({ properties: bBox, value: transport.name, productName: productNameResult, order: transport.checkOrder })
-                        breakLogic = true;
+            let breakLogic = false;
+            //sort transport according to check order
+            props.sortTransportsByCheckOrder();
+            props.transports.forEach((transport) => {
+                if (
+                    breakLogic == false &&
+                    firstDimension <= transport.transportFirstDimension &&
+                    secondDimension <= transport.transportSecondDimension &&
+                    thirdDimension <= transport.transportThirdDimension &&
+                    weightDimension <= transport.weight
+                ) {
+                    result.push({ properties: bBox, value: transport.name, productName: productNameResult, order: transport.checkOrder })
+                    breakLogic = true;
 
-                        setMatchedObjects(result);
-                        return;
-                    }
-                    else {
-                        return;
-                    }
-                });
-            };
-
-            handleCheck();
-
+                    return;
+                }
+                else {
+                    return;
+                }
+            });
         };
 
         //TODO - set message when "Check Transport" function is done
@@ -205,6 +276,8 @@ export default function CheckTransport(props: CheckTransportProps) {
                 alert('Check Transport is done');
             }
         };
+
+        setMatchedObjects(result);
 
         showMessage();
     }
