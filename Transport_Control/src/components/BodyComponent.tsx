@@ -7,6 +7,7 @@ import CheckTransport from "./CheckTransport";
 import _ from "lodash";
 import { WorkspaceAPI } from "trimble-connect-workspace-api";
 import { PropertiesNamesEntity } from "../Entities/PropertiesNamesEntity";
+import { v4 as uuidv4 } from 'uuid';
 
 type BodyComponentProps = {
     api: WorkspaceAPI
@@ -15,6 +16,7 @@ type BodyComponentProps = {
 const initialState = [
     {
         name: "Standard",
+        id: uuidv4(),
         checkOrder: 1,
         type: TransportType.Standard,
         transportFirstDimension: 2438.4,
@@ -24,7 +26,8 @@ const initialState = [
         elements: [],
     },
     {
-        name: "withOneEscort",
+        name: "One Escort",
+        id: uuidv4(),
         checkOrder: 2,
         type: TransportType.Standard,
         transportFirstDimension: 2438.4,
@@ -34,7 +37,8 @@ const initialState = [
         elements: [],
     },
     {
-        name: "withTwoEscort",
+        name: "Two Escorts",
+        id: uuidv4(),
         checkOrder: 3,
         type: TransportType.Standard,
         transportFirstDimension: 2438.4,
@@ -44,7 +48,8 @@ const initialState = [
         elements: [],
     },
     {
-        name: "NonStandard",
+        name: "Non-Standard",
+        id: uuidv4(),
         checkOrder: 99,
         type: TransportType.NonStandard,
         transportFirstDimension: Number.MAX_VALUE,
@@ -54,7 +59,8 @@ const initialState = [
         elements: [],
     },
     {
-        name: "NoData",
+        name: "No-Data",
+        id: uuidv4(),
         checkOrder: 100,
         type: TransportType.NoData,
         transportFirstDimension: 0,
@@ -95,12 +101,30 @@ export default function BodyComponent(props: BodyComponentProps) {
     const addButton = container?.querySelector<HTMLButtonElement>("modus-button[id='add']");
     const removeButton = container?.querySelector<HTMLButtonElement>("modus-button[id='remove']");
     const editButton = container?.querySelector<HTMLButtonElement>("modus-button[id='edit']");
-    const [propertiesNames, setPropertiesNames] = useState<PropertiesNamesEntity>(initialProperties);
+    const [propertiesNames, setPropertiesNames] = useState<PropertiesNamesEntity>(() => {
+        const saved = localStorage.getItem("propertiesNames");
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse propertiesNames from localStorage:", e);
+            }
+        }
+        return initialProperties;
+    });
 
 
     useEffect(() => {
         localStorage.setItem("transports", JSON.stringify(transports));
     }, [transports]);
+
+    useEffect(() => {
+        localStorage.setItem("propertiesNames", JSON.stringify(propertiesNames));
+    }, [propertiesNames]);
+
+    useEffect(() =>{
+        console.log("Den! transprts: ", transports)
+    }, [transports])
 
 
     const sortTransportsByCheckOrder = () => {
@@ -119,6 +143,7 @@ export default function BodyComponent(props: BodyComponentProps) {
         const transport = transports.find(item => item.name === id);
         setSelectedTransport(transport);
         console.log("tranportname:", id);
+        console.log("selectedtransport:", selectedtransport);
         console.log("container:", container);
         console.log("root:", root);
         console.log("addButton:", addButton);
@@ -129,6 +154,11 @@ export default function BodyComponent(props: BodyComponentProps) {
     const resetTransports = () => {
         setTransports(initialState);
         localStorage.removeItem("transports");
+    };
+
+    const resetPropertiesNames = () => {
+        setPropertiesNames(initialProperties);
+        localStorage.removeItem("propertiesNames");
     };
 
 
@@ -150,7 +180,8 @@ export default function BodyComponent(props: BodyComponentProps) {
                     resetTransports={resetTransports}
                     api={props.api}
                     setPropertiesNames={setPropertiesNames}
-                    propertiesNames={propertiesNames} />
+                    propertiesNames={propertiesNames} 
+                    resetPropertiesNames={resetPropertiesNames}/>
                 <TransportCategoriesList transports={transports} giveTransportName={giveTransportName} />
                 <CheckTransport
                     transports={transports}

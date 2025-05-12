@@ -4,6 +4,7 @@ import { TransportType } from '../Enums/TransportType';
 
 export interface TransportTypeEntity {
     name: string;
+    id: string;
     checkOrder: number;
     type: TransportType;
     transportFirstDimension: number;

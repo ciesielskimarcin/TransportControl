@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { TransportType } from "../Enums/TransportType";
 import { WorkspaceAPI } from "trimble-connect-workspace-api";
 import { PropertiesNamesEntity } from "../Entities/PropertiesNamesEntity";
+import { v4 as uuidv4 } from 'uuid';
 
 type ActionBarProps = {
     transports: TransportTypeEntity[]
@@ -21,6 +22,7 @@ type ActionBarProps = {
     api: WorkspaceAPI,
     setPropertiesNames: React.Dispatch<React.SetStateAction<PropertiesNamesEntity>>
     propertiesNames: PropertiesNamesEntity
+    resetPropertiesNames: () => void
 }
 
 type Property = {
@@ -41,6 +43,7 @@ export default function ActionBar(props: ActionBarProps) {
     const [showPropertiesForm, setShowPropertiesForm] = useState(false);
     const [newTransport, setNewTransport] = useState<TransportTypeEntity>({
         name: "",
+        id: uuidv4(),
         checkOrder: 0,
         type: TransportType.Standard,
         transportFirstDimension: 0,
@@ -55,7 +58,7 @@ export default function ActionBar(props: ActionBarProps) {
 
     useEffect(() => {
 
-        setNewEditTransport({ ...props.selectedtransport })
+        setNewEditTransport({ ...props.selectedtransport as TransportTypeEntity })
 
     }, [props.selectedtransport]);
 
@@ -76,17 +79,20 @@ export default function ActionBar(props: ActionBarProps) {
 
     const handleEditInputChange = (field: keyof TransportTypeEntity, value: any) => {
         setNewEditTransport((prev) => ({
-            ...prev,
+            ...prev!,
             [field]: value,
         }));
     };
 
 
     const handleSaveTransport = () => {
-        props.setTransports((prevTransports) => [...prevTransports, newTransport]);
+        const newTransports = [...props.transports, newTransport];
+        const newId = uuidv4()
+        props.setTransports(newTransports);
         setShowForm(false);
         setNewTransport({
             name: "",
+            id: newId,
             checkOrder: 0,
             type: TransportType.Standard,
             transportFirstDimension: 0,
@@ -99,18 +105,16 @@ export default function ActionBar(props: ActionBarProps) {
     };
 
     const handleSaveEditTransport = () => {
-
         const updatedTransports = props.transports.map(transport =>
-            transport.name === newEditTransport.name ? newEditTransport : transport
+            transport.id === newEditTransport?.id ? newEditTransport : transport
         );
         props.setTransports(updatedTransports);
-
         setShowEditForm(false);
 
     };
 
     const handleRemoveTransport = () => {
-        if (props.addButton?.disabled == false) {
+        if (props.removeButton?.disabled == false) {
             props.setTransports((prevTransports) =>
                 prevTransports.filter((transport) => transport.name !== props.transportName)
             );
@@ -121,7 +125,7 @@ export default function ActionBar(props: ActionBarProps) {
     };
 
     const handleEditTransport = () => {
-        if (props.addButton?.disabled == false) {
+        if (props.editButton?.disabled == false) {
             setShowEditForm((prev) => !prev);
         }
         else[
@@ -151,7 +155,10 @@ export default function ActionBar(props: ActionBarProps) {
 
     async function getPropertiesName() {
         const selection = await props.api.viewer.getSelection();
-        if (selection.length == 0) return;
+        if (selection.length == 0) {
+            alert('Please select the elements.')
+            return;
+        }
 
         // selecting first Model from TC 
         var firstSelection = selection[0];
@@ -162,7 +169,7 @@ export default function ActionBar(props: ActionBarProps) {
 
         console.log("productName: ", productName)
 
-        const productNameProperties = productName[0].properties
+        const productNameProperties = productName[0].properties as ProductNameProperty[];
         if (productNameProperties === undefined) return '';
         console.log("productNameProperties: ", productNameProperties)
 
@@ -193,7 +200,6 @@ export default function ActionBar(props: ActionBarProps) {
     function setWeight(value: string) {
         props.setPropertiesNames(prevState => ({ ...prevState, weightProperty: value }));
     }
-
 
 
     return (
@@ -233,7 +239,7 @@ export default function ActionBar(props: ActionBarProps) {
                     title="Remove"
                     size="small"
                     color="primary"
-                    disabled={!props.selectedtransport}
+                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data"}
                     id="remove">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +258,7 @@ export default function ActionBar(props: ActionBarProps) {
                     aria-label="Edit"
                     title="Edit"
                     color="primary"
-                    disabled={!props.selectedtransport}
+                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data"}
                     id="edit">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -367,7 +373,13 @@ export default function ActionBar(props: ActionBarProps) {
                             }
                         />
                     </label>
-                    <ModusButton onClick={handleSaveTransport}>Add</ModusButton>
+                    <ModusButton onClick={() => {
+                        if (!newTransport.name.trim()) {
+                            alert("Name is required.");
+                            return;
+                        }
+                        handleSaveTransport();
+                    }}>Add</ModusButton>
                 </div>
             )}
 
@@ -377,7 +389,7 @@ export default function ActionBar(props: ActionBarProps) {
                         Name:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="text"
-                            value={newEditTransport.name}
+                            value={newEditTransport?.name}
                             placeholder={props.transportName}
                             onChange={(e) => handleEditInputChange("name", e.target.value)}
                         />
@@ -386,7 +398,7 @@ export default function ActionBar(props: ActionBarProps) {
                         Check order:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
-                            value={newEditTransport.checkOrder}
+                            value={newEditTransport?.checkOrder}
                             onChange={(e) => handleEditInputChange("checkOrder", e.target.value)}
                         />
                     </label>
@@ -394,7 +406,7 @@ export default function ActionBar(props: ActionBarProps) {
                         First Dimension:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
-                            value={newEditTransport.transportFirstDimension}
+                            value={newEditTransport?.transportFirstDimension}
                             onChange={(e) =>
                                 handleEditInputChange(
                                     "transportFirstDimension",
@@ -407,7 +419,7 @@ export default function ActionBar(props: ActionBarProps) {
                         Second Dimension:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
-                            value={newEditTransport.transportSecondDimension}
+                            value={newEditTransport?.transportSecondDimension}
                             onChange={(e) =>
                                 handleEditInputChange(
                                     "transportSecondDimension",
@@ -420,7 +432,7 @@ export default function ActionBar(props: ActionBarProps) {
                         Third Dimension:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
-                            value={newEditTransport.transportThirdDimension}
+                            value={newEditTransport?.transportThirdDimension}
                             onChange={(e) =>
                                 handleEditInputChange(
                                     "transportThirdDimension",
@@ -433,7 +445,7 @@ export default function ActionBar(props: ActionBarProps) {
                         Weight:
                         <input style={{ flex: '2', maxWidth: '120px' }}
                             type="number"
-                            value={newEditTransport.weight}
+                            value={newEditTransport?.weight}
                             onChange={(e) =>
                                 handleEditInputChange("weight", parseFloat(e.target.value))
                             }
@@ -445,82 +457,85 @@ export default function ActionBar(props: ActionBarProps) {
 
             {showPropertiesForm && (
                 <div style={{ padding: '10px 0px 0px 0px' }}>
-                    <div className="teklaFont">
-                        <label htmlFor="property-select" >WIDTH:</label>
-                        <select
-                            id="property-select"
-                            value={props.propertiesNames.widthProperty}
-                            onChange={(e) => setWidth(e.target.value)}
-                            style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                            <option value={props.propertiesNames.widthProperty}>
-                                {props.propertiesNames.widthProperty}
-                            </option>
-                            {selectedProperties.map((item: any) => (
-                                <option key={item} value={item}>
-                                    {item}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="teklaFont">
-                        <label htmlFor="property-select" >HEIGHT:</label>
-                        <select
-                            id="property-select"
-                            value={props.propertiesNames.heightProperty}
-                            onChange={(e) => setHeight(e.target.value)}
-                            style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                            <option value={props.propertiesNames.heightProperty}>
-                                {props.propertiesNames.heightProperty}
-                            </option>
-                            {selectedProperties.map((item: any) => (
-                                <option key={item} value={item}>
-                                    {item}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="teklaFont">
-                        <label htmlFor="property-select" >LENGTH:</label>
-                        <select
-                            id="property-select"
-                            value={props.propertiesNames.lengthProperty}
-                            onChange={(e) => setLength(e.target.value)}
-                            style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                            <option value={props.propertiesNames.lengthProperty}>
-                                {props.propertiesNames.lengthProperty}
-                            </option>
-                            {selectedProperties.map((item: any) => (
-                                <option key={item} value={item}>
-                                    {item}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="teklaFont">
-                        <label htmlFor="property-select" >WEIGHT:</label>
-                        <select
-                            id="property-select"
-                            value={props.propertiesNames.weightProperty}
-                            onChange={(e) => setWeight(e.target.value)}
-                            style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
-                        >
-                            <option value={props.propertiesNames.weightProperty}>
-                                {props.propertiesNames.weightProperty}
-                            </option>
-                            {selectedProperties.map((item: any) => (
-                                <option key={item} value={item}>
-                                    {item}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
 
-
+                    <div style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+                        <p style={{ margin: 0, paddingBottom: '10px' }}>IFC Properties</p>
+                        <div className="teklaFont">
+                            <label htmlFor="property-select" >WIDTH:</label>
+                            <select
+                                id="property-select"
+                                value={props.propertiesNames.widthProperty}
+                                onChange={(e) => setWidth(e.target.value)}
+                                style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
+                            >
+                                <option value={props.propertiesNames.widthProperty}>
+                                    {props.propertiesNames.widthProperty}
+                                </option>
+                                {selectedProperties.map((item: any) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="teklaFont">
+                            <label htmlFor="property-select" >HEIGHT:</label>
+                            <select
+                                id="property-select"
+                                value={props.propertiesNames.heightProperty}
+                                onChange={(e) => setHeight(e.target.value)}
+                                style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
+                            >
+                                <option value={props.propertiesNames.heightProperty}>
+                                    {props.propertiesNames.heightProperty}
+                                </option>
+                                {selectedProperties.map((item: any) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="teklaFont">
+                            <label htmlFor="property-select" >LENGTH:</label>
+                            <select
+                                id="property-select"
+                                value={props.propertiesNames.lengthProperty}
+                                onChange={(e) => setLength(e.target.value)}
+                                style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
+                            >
+                                <option value={props.propertiesNames.lengthProperty}>
+                                    {props.propertiesNames.lengthProperty}
+                                </option>
+                                {selectedProperties.map((item: any) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="teklaFont">
+                            <label htmlFor="property-select" >WEIGHT:</label>
+                            <select
+                                id="property-select"
+                                value={props.propertiesNames.weightProperty}
+                                onChange={(e) => setWeight(e.target.value)}
+                                style={{ width: "150px", maxHeight: "150px", overflowY: "scroll" }}
+                            >
+                                <option value={props.propertiesNames.weightProperty}>
+                                    {props.propertiesNames.weightProperty}
+                                </option>
+                                {selectedProperties.map((item: any) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
                         <ModusButton onClick={getPropertiesName}>Read in</ModusButton>
+                        <ModusButton onClick={props.resetPropertiesNames}>Set default</ModusButton>
                     </div>
                 </div>
             )}

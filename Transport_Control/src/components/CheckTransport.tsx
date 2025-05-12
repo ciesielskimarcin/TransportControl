@@ -168,7 +168,8 @@ export default function CheckTransport(props: CheckTransportProps) {
             const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.widthProperty);
             const width = changeStringToNumber(widthResult);
             if (
-                Number.isNaN(width)
+                Number.isNaN(width) ||
+                width == 0 
             ) {
                 result.push({
                     properties: bBox,
@@ -183,7 +184,8 @@ export default function CheckTransport(props: CheckTransportProps) {
             const heightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.heightProperty);
             const height = changeStringToNumber(heightResult);
             if (
-                Number.isNaN(height)
+                Number.isNaN(height) ||
+                height == 0 
             ) {
                 result.push({
                     properties: bBox,
@@ -201,7 +203,8 @@ export default function CheckTransport(props: CheckTransportProps) {
             const lengthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.lengthProperty);
             const length = changeStringToNumber(lengthResult);
             if (
-                Number.isNaN(length)
+                Number.isNaN(length) ||
+                length == 0 
             ) {
                 result.push({
                     properties: bBox,
@@ -219,7 +222,8 @@ export default function CheckTransport(props: CheckTransportProps) {
             const weightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.weightProperty);
             const weight = changeStringToNumber(weightResult);
             if (
-                Number.isNaN(weight)
+                Number.isNaN(weight) ||
+                weight == 0 
             ) {
                 result.push({
                     properties: bBox,
