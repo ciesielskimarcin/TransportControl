@@ -1,5 +1,4 @@
-import { AssemblyViewModel } from './AssemblyViewModel';
-import { TransportType } from '../Enums/TransportType';
+
 
 
 export interface PropertiesNamesEntity {
