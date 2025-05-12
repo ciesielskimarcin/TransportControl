@@ -1,0 +1,126 @@
+# .github/workflows/deploy.yml
+ 
+name: Transport Control Deploy
+ 
+# Controls when the workflow will run
+
+on:
+
+  # Triggers the workflow on push events but only for the main branch
+
+  push:
+
+    branches:
+
+      - main # Or 'master' if that's your default branch
+ 
+  # Allows you to run this workflow manually from the Actions tab
+
+  workflow_dispatch:
+ 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+jobs:
+
+  # This workflow contains a single job called "build-and-deploy"
+
+  build-and-deploy:
+
+    # The type of runner that the job will run on
+
+    runs-on: ubuntu-latest
+ 
+    # Steps represent a sequence of tasks that will be executed as part of the job
+
+    steps:
+
+      # Step 1: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
+      - name: Checkout repository
+
+        uses: actions/checkout@v4 # It's good practice to use specific versions
+ 
+      # Step 2: Set up Node.js. This action sets up a Node.js environment for use in your workflow.
+
+      - name: Set up Node.js
+
+        uses: actions/setup-node@v4
+
+        with:
+
+          node-version: '20' # Specify your desired Node.js version. 'lts/*' or a specific version like '18.x', '20.x'
+
+          cache: 'npm' # Or 'yarn' if you use yarn
+ 
+      # Step 3: Install dependencies
+
+      # If you use yarn, change 'npm install' to 'yarn install'
+
+      # and update the cache key in the step above if necessary
+
+      - name: Install dependencies
+
+        run: npm install # Or yarn install
+ 
+      # Step 4: Build the React application
+
+      # This runs the 'build' script defined in your package.json
+
+      # (e.g., "build": "react-scripts build")
+
+      - name: Build application
+
+        run: npm run build # Or yarn build
+
+        # env:
+
+          # If your app needs environment variables during build time, define them here
+
+          # Example: CI: false (if CRA treats warnings as errors in CI and you want to bypass that for warnings)
+
+          # PUBLIC_URL: /your-repo-name # Usually handled by package.json 'homepage', but can be set here if needed
+
+          # GENERATE_SOURCEMAP: false # Optional: to reduce build size if you don't need source maps on gh-pages
+ 
+      # Step 5: Deploy to GitHub Pages
+
+      # This step uses a popular action to deploy the build output to the gh-pages branch.
+
+      # Make sure your 'homepage' field in package.json is set correctly:
+
+      # "homepage": "https://<username>.github.io/<repository-name>"
+
+      - name: Deploy to GitHub Pages
+
+        uses: peaceiris/actions-gh-pages@v4
+
+        with:
+
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          publish_dir: ./dist # Or './build' or wherever your build output is
+
+          # Optional: If you are deploying to a custom domain, you might need a CNAME file.
+
+          # cname: your.custom.domain.com
+
+          # user_name: 'github-actions[bot]' # Optional: Custom committer name
+
+          # user_email: 'github-actions[bot]@users.noreply.github.com' # Optional: Custom committer email
+
+          # publish_branch: gh-pages # Default is gh-pages, can be changed if needed
+
+          # force_orphan: true # Creates a new history for the gh-pages branch, common for build artifacts
+ 
+# Permissions for the GITHUB_TOKEN
+
+# This is important for the actions-gh-pages action to be able to push to your repo.
+
+permissions:
+
+  contents: write # or 'read' if you are using a different deployment strategy that doesn't push to a branch
+
+  pages: write    # Needed if you are deploying to GitHub Pages environment directly
+
+  id-token: write # Needed for some advanced deployment scenarios
+ 
