@@ -314,7 +314,7 @@ export default function CheckTransport(props: CheckTransportProps) {
                             {
                                 val.map(o =>
                                     <ModusTreeViewItem onItemClick={((e) => showSelectedItem(o.properties.id, e))}
-                                        nodeId={o.properties.id.toString()}
+                                        nodeId={key + "-" + o.properties.id.toString()}
                                         label={o.productName + " - id: " + o.properties.id.toString()}>
                                     </ModusTreeViewItem>
                                 )
