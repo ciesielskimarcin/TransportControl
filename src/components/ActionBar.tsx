@@ -167,11 +167,8 @@ export default function ActionBar(props: ActionBarProps) {
         const bBoxes = await props.api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
         const productName = await props.api.viewer.getObjectProperties(firstSelection.modelId, [bBoxes[0].id]);
 
-        console.log("productName: ", productName)
-
         const productNameProperties = productName[0].properties as ProductNameProperty[];
         if (productNameProperties === undefined) return '';
-        console.log("productNameProperties: ", productNameProperties)
 
         const getPropertyNames = (productNameProperties: ProductNameProperty[]): string[] => {
             return productNameProperties.flatMap((section) =>
@@ -181,7 +178,6 @@ export default function ActionBar(props: ActionBarProps) {
 
         const results = getPropertyNames(productNameProperties);
         setSelectedProperties(results);
-        console.log("result: ", results)
     }
 
 

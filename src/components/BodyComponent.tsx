@@ -142,13 +142,6 @@ export default function BodyComponent(props: BodyComponentProps) {
         setTransportName(id);
         const transport = transports.find(item => item.name === id);
         setSelectedTransport(transport);
-        console.log("tranportname:", id);
-        console.log("selectedtransport:", selectedtransport);
-        console.log("container:", container);
-        console.log("root:", root);
-        console.log("addButton:", addButton);
-        console.log("removeButton:", removeButton);
-        console.log("transport list:", transports);
     };
 
     const resetTransports = () => {

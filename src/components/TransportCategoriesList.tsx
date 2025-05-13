@@ -9,16 +9,6 @@ type TransportCategoriesListProps = {
 
 export default function TransportCategoriesList(props: TransportCategoriesListProps) {
 
-
-
-    // const [transportName, setTransportName] = useState("");
-    // function giveTransportName(id: string) {
-    //     setTransportName(id);
-    //     console.log("tranportname:", id);
-    // };
-
-
-
     return (
         <div>
             <ModusTreeView size="condensed">

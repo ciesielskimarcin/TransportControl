@@ -33,12 +33,8 @@ export default function CheckTransport(props: CheckTransportProps) {
 
             const modelObjects = await props.api.viewer.getObjects();
             modelId.current = modelObjects[0].modelId;
-
-            console.log("this is model objects: ", modelObjects);
-            console.log("this is modeliD.current: ", modelId.current)
         }
         getObjectsProperties();
-
     }, [matchedObjects]);
 
 
@@ -49,8 +45,6 @@ export default function CheckTransport(props: CheckTransportProps) {
         const propertyType = splitted[1];
 
         const properties = await props.api.viewer.getObjectProperties(modelId, [objectId]);
-
-        console.log("HERE!! object properites: ", properties[0].properties);
 
         const propss = properties[0].properties;
         if (propss === undefined) return '';
@@ -89,11 +83,6 @@ export default function CheckTransport(props: CheckTransportProps) {
 
 
         props.api.viewer.setSelection(objectSelector, "set");
-        console.log("matchedObjects: ", matchedObjects);
-        console.log("filteredObjects: ", filteredObjects);
-        console.log("modelId.current: ", modelId.current)
-        console.log("newModelId: ", newModelId)
-        console.log("filtered: ", objectSelector);
     }
 
     function showSelectedItem(itemId: number, e: ModusTreeViewItemCustomEvent<boolean>) {
@@ -107,11 +96,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             modelObjectIds: [{ modelId: newModelId, objectRuntimeIds: filtered.map(r => r.properties.id) }]
         };
 
-
         props.api.viewer.setSelection(objectSelector, "set");
-        console.log("filtered: ", filtered);
-        console.log("objectSelector: ", objectSelector);
-        console.log("Ten Jeden Element!!!");
     }
 
 
@@ -135,16 +120,11 @@ export default function CheckTransport(props: CheckTransportProps) {
             return;
         }
 
-        console.log("selection:   ", selection)
-
         // selecting first Model from TC 
         var firstSelection = selection[0];
         if (firstSelection.objectRuntimeIds === undefined) return;
 
-        //console.log("first selection.objectsRuntimeIds", firstSelection);
-
         const bBoxes = await props.api.viewer.getObjectProperties(firstSelection.modelId, firstSelection.objectRuntimeIds);
-        console.log("bBoxes: ", bBoxes);
         for (let i = 0; i < bBoxes.length; i++) {
 
             if (cancelTriggerRef.current) {
@@ -154,7 +134,6 @@ export default function CheckTransport(props: CheckTransportProps) {
                 return;
             }
 
-
             const bBox = bBoxes[i];
 
             const newArray: number[] = [];
@@ -162,8 +141,6 @@ export default function CheckTransport(props: CheckTransportProps) {
 
             const productName = await props.api.viewer.getObjectProperties(firstSelection.modelId, [bBox.id]);
             const productNameResult = productName[0].product?.name;
-            console.log("productName", productName)
-
 
             const widthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.widthProperty);
             const width = changeStringToNumber(widthResult);
@@ -199,7 +176,6 @@ export default function CheckTransport(props: CheckTransportProps) {
                 newArray.push(height);
             }
 
-
             const lengthResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.lengthProperty);
             const length = changeStringToNumber(lengthResult);
             if (
@@ -217,7 +193,6 @@ export default function CheckTransport(props: CheckTransportProps) {
             else {
                 newArray.push(length);
             }
-
 
             const weightResult = await getPropertyValue(firstSelection.modelId, bBox.id, props.propertiesNames.weightProperty);
             const weight = changeStringToNumber(weightResult);
@@ -247,7 +222,6 @@ export default function CheckTransport(props: CheckTransportProps) {
             const thirdDimension = sortedArray[2];
 
             const weightDimension = newWeight[0];
-
 
             let breakLogic = false;
             //sort transport according to check order
@@ -279,12 +253,8 @@ export default function CheckTransport(props: CheckTransportProps) {
         };
 
         setMatchedObjects(result);
-
         showMessage();
     }
-
-    console.log('listOfArrays: ', [listOfArrays]);
-    console.log("Matched Objects outside code:", [matchedObjects]);
 
     function clear() {
         cancelTriggerRef.current = true;
