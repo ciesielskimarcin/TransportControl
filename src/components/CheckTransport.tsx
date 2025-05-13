@@ -23,9 +23,7 @@ type CheckTransportProps = {
 export default function CheckTransport(props: CheckTransportProps) {
 
     const cancelTriggerRef = useRef(false);
-    const [listOfArrays, setListOfArrays] = useState<number[][]>([]);
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
-    const [filteredObjects, setFilteredObjects] = useState<ObjectWithValue[]>([]);
     const modelId = useRef<string>('');
 
     useEffect(() => {
@@ -73,7 +71,6 @@ export default function CheckTransport(props: CheckTransportProps) {
     function showSelectedGroup(groupName: string) {
 
         const filtered = matchedObjects.filter(obj => obj.value === groupName);
-        setFilteredObjects(filtered);
 
         const newModelId = modelId.current;
 
@@ -88,7 +85,6 @@ export default function CheckTransport(props: CheckTransportProps) {
     function showSelectedItem(itemId: number, e: ModusTreeViewItemCustomEvent<boolean>) {
         e.stopPropagation();
         const filtered = matchedObjects.filter(obj => obj.properties.id === itemId);
-        setFilteredObjects(filtered);
 
         const newModelId = modelId.current;
 
@@ -102,7 +98,6 @@ export default function CheckTransport(props: CheckTransportProps) {
 
 
     async function triggerTest() {
-        setListOfArrays([]);
         setMatchedObjects([]);
         cancelTriggerRef.current = false;
         const result: ObjectWithValue[] = [];
@@ -129,7 +124,6 @@ export default function CheckTransport(props: CheckTransportProps) {
 
             if (cancelTriggerRef.current) {
                 setMatchedObjects([]);
-                setListOfArrays([]);
                 console.log('Trigger test was cancelled.');
                 return;
             }
@@ -214,9 +208,6 @@ export default function CheckTransport(props: CheckTransportProps) {
 
             const sortedArray = [...newArray].sort((a, b) => a - b);
 
-            // This collect arrays with dimenions of selected the elements. 
-            setListOfArrays((prevList) => [...prevList, sortedArray]);
-
             const firstDimension = sortedArray[0];
             const secondDimension = sortedArray[1];
             const thirdDimension = sortedArray[2];
@@ -259,7 +250,6 @@ export default function CheckTransport(props: CheckTransportProps) {
     function clear() {
         cancelTriggerRef.current = true;
         setMatchedObjects([]);
-        setListOfArrays([]);
         console.log('Check was canceled')
     }
 
