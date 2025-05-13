@@ -22,7 +22,7 @@ const initialState = [
         transportFirstDimension: 2438.4,
         transportSecondDimension: 2590.8,
         transportThirdDimension: 16154.4,
-        weight: 151,
+        weight: 40823,
         elements: [],
     },
     {
@@ -33,7 +33,7 @@ const initialState = [
         transportFirstDimension: 2438.4,
         transportSecondDimension: 4343.4,
         transportThirdDimension: 16154.4,
-        weight: 22500,
+        weight: 40823,
         elements: [],
     },
     {
@@ -44,7 +44,7 @@ const initialState = [
         transportFirstDimension: 2438.4,
         transportSecondDimension: 4978.4,
         transportThirdDimension: 16154.4,
-        weight: 40823.31,
+        weight: 40823,
         elements: [],
     },
     {
