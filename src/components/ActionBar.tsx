@@ -235,7 +235,7 @@ export default function ActionBar(props: ActionBarProps) {
                     title="Remove"
                     size="small"
                     color="primary"
-                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data"}
+                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data" || props.selectedtransport.name === "Non-Standard"}
                     id="remove">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -254,7 +254,7 @@ export default function ActionBar(props: ActionBarProps) {
                     aria-label="Edit"
                     title="Edit"
                     color="primary"
-                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data"}
+                    disabled={!props.selectedtransport || props.selectedtransport.name === "No-Data" || props.selectedtransport.name === "Non-Standard"}
                     id="edit">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
