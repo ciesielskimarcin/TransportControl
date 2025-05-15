@@ -122,9 +122,6 @@ export default function BodyComponent(props: BodyComponentProps) {
         localStorage.setItem("propertiesNames", JSON.stringify(propertiesNames));
     }, [propertiesNames]);
 
-    useEffect(() =>{
-        console.log("Den! transprts: ", transports)
-    }, [transports])
 
 
     const sortTransportsByCheckOrder = () => {

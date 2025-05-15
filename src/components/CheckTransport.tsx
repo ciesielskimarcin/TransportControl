@@ -25,6 +25,7 @@ export default function CheckTransport(props: CheckTransportProps) {
     const cancelTriggerRef = useRef(false);
     const [matchedObjects, setMatchedObjects] = useState<ObjectWithValue[]>([]);
     const modelId = useRef<string>('');
+    const [showAllButton, setShowAllButton] = useState(false);
 
     useEffect(() => {
         async function getObjectsProperties() {
@@ -95,6 +96,16 @@ export default function CheckTransport(props: CheckTransportProps) {
         props.api.viewer.setSelection(objectSelector, "set");
     }
 
+    function showAllGroups() {
+        const newModelId = modelId.current;
+
+        const objectSelector: ObjectSelector = {
+            modelObjectIds: [{ modelId: newModelId, objectRuntimeIds: matchedObjects.map(r => r.properties.id) }]
+        };
+
+        props.api.viewer.setSelection(objectSelector, "set");
+    }
+
 
 
     async function triggerTest() {
@@ -140,7 +151,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const width = changeStringToNumber(widthResult);
             if (
                 Number.isNaN(width) ||
-                width == 0 
+                width == 0
             ) {
                 result.push({
                     properties: bBox,
@@ -156,7 +167,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const height = changeStringToNumber(heightResult);
             if (
                 Number.isNaN(height) ||
-                height == 0 
+                height == 0
             ) {
                 result.push({
                     properties: bBox,
@@ -174,7 +185,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const length = changeStringToNumber(lengthResult);
             if (
                 Number.isNaN(length) ||
-                length == 0 
+                length == 0
             ) {
                 result.push({
                     properties: bBox,
@@ -192,7 +203,7 @@ export default function CheckTransport(props: CheckTransportProps) {
             const weight = changeStringToNumber(weightResult);
             if (
                 Number.isNaN(weight) ||
-                weight == 0 
+                weight == 0
             ) {
                 result.push({
                     properties: bBox,
@@ -245,11 +256,19 @@ export default function CheckTransport(props: CheckTransportProps) {
 
         setMatchedObjects(result);
         showMessage();
+
+        if (showAllButton == false) {
+            setShowAllButton((prev) => !prev);
+        }else{
+            
+        }
+
     }
 
     function clear() {
         cancelTriggerRef.current = true;
         setMatchedObjects([]);
+        setShowAllButton((prev) => !prev);
         console.log('Check was canceled')
     }
 
@@ -283,6 +302,9 @@ export default function CheckTransport(props: CheckTransportProps) {
                     )
                 }
             </ModusTreeView>
+            {showAllButton && (
+                <ModusButton style={{ marginTop: '10px' }} onClick={showAllGroups}>Select All</ModusButton>
+            )}
         </div>
 
     )
